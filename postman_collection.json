@@ -149,9 +149,14 @@
               "mode": "formdata",
               "formdata": [
                 {
-                  "key": "image",
+                  "key": "file",
                   "type": "file",
                   "src": []
+                },
+                {
+                  "key": "save_image",
+                  "value": "true",
+                  "type": "text"
                 }
               ]
             },
@@ -166,7 +171,147 @@
                 "predict"
               ]
             },
-            "description": "Upload an image to predict plant disease"
+            "description": "Upload an image to predict plant disease (requires authentication)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Classes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/prediction/classes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "prediction",
+                "classes"
+              ]
+            },
+            "description": "Get all available plant disease classes"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Prediction History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/prediction/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "prediction",
+                "history"
+              ]
+            },
+            "description": "Get prediction history for the authenticated user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Prediction Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/prediction/history/:prediction_id?include_image=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "prediction",
+                "history",
+                ":prediction_id"
+              ],
+              "query": [
+                {
+                  "key": "include_image",
+                  "value": "true"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "prediction_id",
+                  "value": "",
+                  "description": "ID of the prediction to retrieve"
+                }
+              ]
+            },
+            "description": "Get details of a specific prediction (requires authentication)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All User Predictions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/prediction/my-predictions?limit=20&offset=0&sort_by=timestamp&sort_order=desc&plant_type=Tomato&condition=healthy",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "prediction",
+                "my-predictions"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "timestamp"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "desc"
+                },
+                {
+                  "key": "plant_type",
+                  "value": "Tomato",
+                  "description": "Optional filter by plant type"
+                },
+                {
+                  "key": "condition",
+                  "value": "healthy",
+                  "description": "Optional filter by condition"
+                }
+              ]
+            },
+            "description": "Get all predictions for the authenticated user with filters (requires authentication)"
           },
           "response": []
         }

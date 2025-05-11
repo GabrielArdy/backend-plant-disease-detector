@@ -204,8 +204,36 @@ This is particularly useful for:
 
 ### Prediction
 
-- `POST /api/prediction/predict` - Predict plant disease from image
-  - Request body: Image data
+- `POST /api/prediction/predict` - Predict plant disease from image (requires authentication)
+  - Headers: `Authorization: Bearer {token}`
+  - Request body: Multipart form with:
+    - `file`: Image file
+    - `save_image`: Boolean to save image (optional, default: true)
+  
+- `GET /api/prediction/classes` - Get all available disease classes
+  
+- `GET /api/prediction/history` - Get prediction history for the authenticated user (requires authentication)
+  - Headers: `Authorization: Bearer {token}`
+  - Query parameters:
+    - `limit`: Maximum number of records to return (optional, default: 20)
+    - `offset`: Number of records to skip for pagination (optional, default: 0)
+  
+- `GET /api/prediction/history/{prediction_id}` - Get details for a specific prediction (requires authentication)
+  - Headers: `Authorization: Bearer {token}`
+  - Path parameters:
+    - `prediction_id`: ID of the prediction to retrieve
+  - Query parameters:
+    - `include_image`: Include base64 encoded image data (optional, default: false)
+  
+- `GET /api/prediction/my-predictions` - Get all prediction histories for the authenticated user with filtering (requires authentication)
+  - Headers: `Authorization: Bearer {token}`
+  - Query parameters:
+    - `limit`: Maximum number of records to return (optional, default: 100)
+    - `offset`: Number of records to skip for pagination (optional, default: 0)
+    - `sort_by`: Field to sort by (optional, default: 'timestamp')
+    - `sort_order`: Sort order ('asc' or 'desc', optional, default: 'desc')
+    - `plant_type`: Filter by plant type (optional)
+    - `condition`: Filter by plant condition (optional)
 
 ## API Testing with Postman
 

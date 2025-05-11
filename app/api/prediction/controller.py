@@ -1,23 +1,27 @@
-from flask import request, jsonify, current_app
+from flask import request, jsonify, current_app, g
 from app.api.prediction import prediction_bp
 from app.api.prediction.services import PredictionService
 from app.utils.generators import generate_uuid, get_current_timestamp
 from app.utils.log import get_logger
 from app.utils.storage import ImageStorage
 from app.core.models.model_loader import ModelLoader
+from app.middleware.auth import token_required
 
 logger = get_logger(__name__)
 
 @prediction_bp.route('/predict', methods=['POST'])
+@token_required
 def predict():
     """
     Predict plant disease from uploaded image and save to history
+    Requires authentication
     """
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     
     file = request.files['file']
-    user_id = request.form.get('user_id', '')
+    # Get user_id from authentication token
+    user_id = g.user_id
     save_image = request.form.get('save_image', 'true').lower() == 'true'
     
     if file.filename == '':
@@ -65,21 +69,17 @@ def get_classes():
         return jsonify({'error': str(e)}), 500
 
 @prediction_bp.route('/history', methods=['GET'])
+@token_required
 def get_prediction_history():
     """
-    Get prediction history for a specific user
-    
-    Required query parameters:
-    - user_id: ID of the user whose history to retrieve
+    Get prediction history for the authenticated user
     
     Optional query parameters:
     - limit: Maximum number of records to return (default 20)
     - offset: Number of records to skip for pagination (default 0)
     """
-    user_id = request.args.get('user_id')
-    
-    if not user_id:
-        return jsonify({'error': 'user_id is required'}), 400
+    # Get user_id from authentication token
+    user_id = g.user_id
     
     try:
         # Get pagination parameters
@@ -108,6 +108,7 @@ def get_prediction_history():
         return jsonify({'error': str(e)}), 500
 
 @prediction_bp.route('/history/<prediction_id>', methods=['GET'])
+@token_required
 def get_prediction_detail(prediction_id):
     """
     Get details for a specific prediction
@@ -136,4 +137,65 @@ def get_prediction_detail(prediction_id):
             
     except Exception as e:
         logger.error(f"Error retrieving prediction details: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@prediction_bp.route('/my-predictions', methods=['GET'])
+@token_required
+def get_all_user_predictions():
+    """
+    Get all prediction histories for the authenticated user
+    
+    Optional query parameters:
+    - limit: Maximum number of records to return (default 100)
+    - offset: Number of records to skip for pagination (default 0)
+    - sort_by: Field to sort by (default 'timestamp')
+    - sort_order: Sort order ('asc' or 'desc', default 'desc')
+    - plant_type: Filter by plant type
+    - condition: Filter by plant condition (e.g., 'healthy', 'late_blight')
+    """
+    user_id = g.user_id
+    
+    try:
+        # Get pagination and filter parameters
+        limit = min(int(request.args.get('limit', 100)), 500)
+        offset = int(request.args.get('offset', 0))
+        sort_by = request.args.get('sort_by', 'timestamp')
+        sort_order = request.args.get('sort_order', 'desc').lower()
+        plant_type = request.args.get('plant_type', None)
+        condition = request.args.get('condition', None)
+        
+        # Validate sort order
+        if sort_order not in ['asc', 'desc']:
+            sort_order = 'desc'
+        
+        # Prepare filters
+        filters = {'user_id': user_id}
+        if plant_type:
+            filters['plant_type'] = plant_type
+        if condition:
+            filters['condition'] = condition
+            
+        # Get predictions with filters
+        predictions = PredictionService.get_filtered_predictions(
+            filters=filters,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            limit=limit,
+            offset=offset
+        )
+        
+        # Get total count of user's predictions
+        total_count = PredictionService.count_user_predictions(user_id)
+        
+        return jsonify({
+            'user_id': user_id,
+            'predictions': predictions,
+            'count': len(predictions),
+            'total': total_count,
+            'limit': limit,
+            'offset': offset
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error retrieving all user predictions: {str(e)}")
         return jsonify({'error': str(e)}), 500

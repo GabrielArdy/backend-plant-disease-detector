@@ -114,3 +114,54 @@ class PredictionHistory:
         except Exception as e:
             logger.error(f"Error retrieving prediction by ID: {str(e)}")
             return None
+            
+    @staticmethod
+    def get_filtered_predictions(filters, sort_by='timestamp', sort_order='desc', limit=100, offset=0):
+        """
+        Get prediction history with filters
+        
+        Args:
+            filters (dict): Dictionary of filters to apply (e.g., {'user_id': '123', 'plant_type': 'Tomato'})
+            sort_by (str): Field to sort by
+            sort_order (str): Sort order ('asc' or 'desc')
+            limit (int): Maximum number of results to return
+            offset (int): Number of results to skip (for pagination)
+            
+        Returns:
+            list: List of filtered prediction records
+        """
+        try:
+            # Determine sort direction
+            sort_direction = -1 if sort_order == 'desc' else 1
+            
+            # Execute query
+            cursor = mongo.db.prediction_history.find(
+                filters
+            ).sort(sort_by, sort_direction).skip(offset).limit(limit)
+            
+            # Convert MongoDB cursor to list and handle ObjectId serialization
+            predictions = json.loads(json_util.dumps(list(cursor)))
+            
+            logger.info(f"Retrieved {len(predictions)} filtered predictions")
+            return predictions
+            
+        except Exception as e:
+            logger.error(f"Error retrieving filtered predictions: {str(e)}")
+            return []
+            
+    @staticmethod
+    def count_user_predictions(user_id):
+        """
+        Count total number of predictions for a user
+        
+        Args:
+            user_id (str): User ID
+            
+        Returns:
+            int: Total count of predictions
+        """
+        try:
+            return mongo.db.prediction_history.count_documents({'user_id': user_id})
+        except Exception as e:
+            logger.error(f"Error counting user predictions: {str(e)}")
+            return 0

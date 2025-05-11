@@ -254,3 +254,47 @@ class PredictionService:
         except Exception as e:
             logger.error(f"Error retrieving prediction details: {str(e)}")
             return None
+            
+    @classmethod
+    def get_filtered_predictions(cls, filters=None, sort_by='timestamp', sort_order='desc', limit=100, offset=0):
+        """
+        Get prediction history with filters
+        
+        Args:
+            filters (dict): Dictionary of filters to apply
+            sort_by (str): Field to sort by
+            sort_order (str): Sort order ('asc' or 'desc')
+            limit (int): Maximum number of results to return
+            offset (int): Number of results to skip (for pagination)
+            
+        Returns:
+            list: List of prediction history records
+        """
+        try:
+            return PredictionHistory.get_filtered_predictions(
+                filters=filters or {},
+                sort_by=sort_by,
+                sort_order=sort_order,
+                limit=limit,
+                offset=offset
+            )
+        except Exception as e:
+            logger.error(f"Error retrieving filtered predictions: {str(e)}")
+            return []
+            
+    @classmethod
+    def count_user_predictions(cls, user_id):
+        """
+        Count total number of predictions for a user
+        
+        Args:
+            user_id (str): User ID
+            
+        Returns:
+            int: Total count of predictions
+        """
+        try:
+            return PredictionHistory.count_user_predictions(user_id)
+        except Exception as e:
+            logger.error(f"Error counting user predictions: {str(e)}")
+            return 0
