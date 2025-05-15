@@ -31,6 +31,27 @@ class ImageStorage:
             str: GridFS file ID as string
         """
         try:
+            from flask import current_app
+            
+            # Check if we're in application context
+            if not current_app:
+                logger.error("No Flask application context available")
+                raise RuntimeError("No Flask application context available")
+                
+            # Check if GridFS is available
+            if not fs:
+                logger.error("GridFS instance is not available")
+                raise RuntimeError("GridFS instance is not available")
+                
+            # Validate input parameters
+            if not image_file:
+                logger.error("No image file provided")
+                return None
+                
+            if not prediction_id:
+                logger.error("No prediction ID provided")
+                return None
+                
             # Reset file pointer to beginning
             image_file.seek(0)
             
@@ -51,13 +72,24 @@ class ImageStorage:
                 'filename': f"{prediction_id}.jpg"
             }
             
+            logger.debug(f"Attempting to save image to GridFS with metadata: {metadata}")
+            
             # Save to GridFS
-            file_id = fs.put(output.read(), **metadata)
+            image_data = output.read()
+            if not image_data:
+                logger.error("Generated empty image data")
+                return None
+                
+            file_id = fs.put(image_data, **metadata)
             
             logger.info(f"Image saved in GridFS with ID {file_id}")
             
             return str(file_id)
             
+        except AttributeError as e:
+            logger.error(f"GridFS AttributeError: {str(e)}")
+            logger.error("This usually indicates that GridFS is not properly initialized")
+            return None
         except Exception as e:
             logger.error(f"Failed to save image to GridFS: {str(e)}")
             return None
@@ -110,13 +142,28 @@ class ImageStorage:
             # Convert string ID to ObjectId
             obj_id = ObjectId(file_id)
             
-            # Find file metadata
-            file_data = mongo.db.fs.files.find_one({"_id": obj_id})
-            if not file_data:
-                logger.warning(f"Image metadata not found for ID {file_id}")
+            # Get the GridFS file directly - this also returns metadata
+            if not fs.exists(obj_id):
+                logger.warning(f"Image not found in GridFS with ID {file_id}")
                 return None
                 
-            return file_data
+            # Get the file from GridFS
+            grid_out = fs.get(obj_id)
+            
+            # Extract metadata from GridOut object
+            metadata = {
+                'content_type': grid_out.content_type,
+                'filename': grid_out.filename,
+                'upload_date': grid_out.upload_date,
+                'length': grid_out.length
+            }
+            
+            # Add any custom metadata
+            for key in ['prediction_id', 'user_id', 'timestamp']:
+                if hasattr(grid_out, key):
+                    metadata[key] = getattr(grid_out, key)
+                    
+            return metadata
                 
         except Exception as e:
             logger.error(f"Failed to get image metadata: {str(e)}")
