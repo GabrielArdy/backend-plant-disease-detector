@@ -29,3 +29,5 @@ build/
 
 # Local development
 .DS_Store
+
+*.env
