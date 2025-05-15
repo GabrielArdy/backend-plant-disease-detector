@@ -9,6 +9,16 @@ Plant disease images are now stored in MongoDB using GridFS, which allows for ef
 1. `fs.files` - Stores file metadata
 2. `fs.chunks` - Stores the actual file data in chunks
 
+## GridFS Initialization (Updated May 15, 2025)
+
+The GridFS system has been enhanced with a more robust initialization pattern:
+
+- Implemented a `GridFSProxy` class that lazily initializes the GridFS connection only when needed
+- Ensures that GridFS is initialized within the Flask application context
+- Provides proper error handling for initialization failures
+- Adds diagnostic logging for GridFS operations
+- Fixes the `'NoneType' object has no attribute 'put'` error that occurred during image uploads
+
 ## Benefits of GridFS
 
 - **Database-based storage**: All images are stored in the database, making backups and migrations easier

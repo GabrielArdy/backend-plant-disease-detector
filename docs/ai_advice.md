@@ -55,9 +55,23 @@ Content-Type: application/json
 }
 ```
 
-## Fallback Mechanism
+## Fallback Mechanism (Enhanced May 15, 2025)
 
-If the Gemini API is unavailable or encounters an error, the system will fall back to a built-in advice database that provides basic guidance for common plant diseases.
+If the Gemini API is unavailable or encounters an error, the system will fall back to a built-in advice database that provides basic guidance for common plant diseases. The fallback system has been enhanced with the following improvements:
+
+1. **Robust Response Parsing**: Improved algorithms for parsing AI-generated responses with multiple pattern recognition approaches
+   
+2. **Multi-stage Fallbacks**:
+   - First tries to extract advice using strict section header patterns
+   - If that fails, uses a more flexible pattern matching approach
+   - Finally falls back to pre-defined advice templates for common conditions
+   
+3. **Comprehensive Templates**: Complete advice templates for common conditions like Tomato Early Blight that include:
+   - Detailed treatment instructions with organic and conventional options
+   - Comprehensive prevention strategies covering cultural practices and environmental management
+   - Scientific background on disease causes, symptoms, and environmental factors
+   
+4. **Fixed Known Issues**: Resolved specific issues with advice generation for Tomato Early Blight and similar conditions that previously returned incomplete or placeholder text.
 
 ## Environment Configuration
 

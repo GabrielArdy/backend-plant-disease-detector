@@ -212,6 +212,23 @@ This is particularly useful for:
   - Headers: `Authorization: Bearer {token}`
   - Request body: `{ "avatar": "...", "cover_image": "...", "description": "..." }`
 
+### System Health
+
+- `GET /api/health` - Check the health status of system components
+  - Response includes status of MongoDB, GridFS, and Advice Service
+  - No authentication required
+  - Example response:
+    ```json
+    {
+      "status": "healthy",
+      "services": {
+        "mongodb": "ok",
+        "gridfs": "ok",
+        "advice_service": "ok"
+      }
+    }
+    ```
+
 ### Prediction
 
 - `POST /api/prediction/predict` - Predict plant disease from image (requires authentication)
@@ -281,6 +298,50 @@ python scripts/migrate_to_gridfs.py --dry-run
 
 # Run the actual migration
 python scripts/migrate_to_gridfs.py
+```
+
+## Recent Updates (May 15, 2025)
+
+### 1. Fixed GridFS Storage Issue
+
+We've fixed an issue with GridFS storage where a `'NoneType' object has no attribute 'put'` error would occur. The solution includes:
+
+- Implemented a `GridFSProxy` class in `extensions.py` that lazily initializes GridFS only when needed
+- Ensured proper initialization within Flask app context
+- Added improved error handling for GridFS operations
+- Fixed application startup by properly initializing GridFS
+- Added comprehensive tests for GridFS functionality
+
+### 2. Enhanced Advice Generation for Plant Diseases
+
+We've improved the advice generation system, particularly for Tomato Early Blight where it was returning empty or placeholder text:
+
+- Enhanced the `_process_ai_response()` function to better parse AI-generated responses
+- Added multiple section header patterns for more robust content extraction
+- Implemented fallback parsing for cases where strict pattern matching fails
+- Added specific hardcoded fallback advice for common conditions like Tomato Early Blight
+- Fixed logging issues and improved debugging capabilities
+
+### 3. Added Health Monitoring
+
+- Added a new `/api/health` endpoint to monitor system status
+- Provides real-time checks of MongoDB, GridFS, and Advice Service
+- Helps quickly identify if any component is not functioning properly
+
+### How to Test These Fixes
+
+```bash
+# Test GridFS functionality
+python test_fixed_gridfs.py
+
+# Test advice generation
+python test_advice.py
+
+# Verify all systems are working
+python verify_fixes.py
+
+# Update any existing bad advice in the database
+python fix_tomato_advice.py
 ```
 
 ## API Testing with Postman

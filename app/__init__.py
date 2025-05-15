@@ -58,34 +58,10 @@ def create_app(config_name='development'):
     # Register blueprints
     app.register_blueprint(prediction_bp)
     app.register_blueprint(auth_bp)
-
-    # Add health check endpoint
-    @app.route('/api/health', methods=['GET'])
-    def health_check():
-        """
-        Health check endpoint to verify the API is running
-        """
-        from app.utils.gpu_utils import get_device_info
-        from app.services.advice_service import check_gemini_connection
-        
-        # Get device information
-        device_info = get_device_info()
-        
-        # Check Gemini connection
-        genai_status = check_gemini_connection()
-        
-        return jsonify({
-            'status': 'ok',
-            'message': 'Plant Disease API is running',
-            'version': '1.0.0',
-            'environment': config_name,
-            'hardware': {
-                'using_gpu': device_info['using_gpu'],
-                'gpu_count': device_info['num_gpus'],
-                'genai': genai_status,
-                'tensorflow_version': tf.__version__
-            }
-        })
+    
+    # Register the health blueprint
+    from app.api.health import health_bp
+    app.register_blueprint(health_bp)
 
     logger.info(f"Application created with {config_name} configuration")
     return app

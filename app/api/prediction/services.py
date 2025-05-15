@@ -130,7 +130,14 @@ class PredictionService:
                 "Remove infected plant parts and avoid overhead irrigation. Apply copper-based bactericides. Use disease-free seeds and practice crop rotation.",
             
             "tomato___early_blight": 
-                "Remove lower infected leaves. Apply fungicides containing chlorothalonil or mancozeb. Ensure proper spacing between plants for air circulation.",
+                """TREATMENT:
+Remove infected lower leaves immediately and dispose of them (do not compost). Apply fungicides containing chlorothalonil, mancozeb, or copper-based products every 7-10 days. Organic options include copper fungicides, neem oil, or sulfur products. Ensure proper spacing between plants to improve air circulation.
+
+PREVENTION:
+Practice crop rotation (don't plant tomatoes in the same spot for 3-4 years). Use drip irrigation or water at the base to keep foliage dry. Mulch around plants to prevent soil splash. Choose resistant varieties when available. Remove plant debris at the end of the growing season. 
+
+ADDITIONAL INFORMATION:
+Early blight is caused by the fungus Alternaria solani and typically appears first on older, lower leaves as small brown spots with concentric rings (bull's-eye pattern). It thrives in warm (75-85°F), humid conditions, especially with alternating wet and dry periods. Without treatment, it can cause significant defoliation and reduce yields by 30-50%.""",
             
             "tomato___late_blight": 
                 "This is a serious disease requiring immediate action. Remove infected plants to prevent spread. Apply fungicides with active ingredients like chlorothalonil or mancozeb. Water at the base of plants and avoid overhead irrigation.",
