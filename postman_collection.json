@@ -314,6 +314,61 @@
             "description": "Get all predictions for the authenticated user with filters (requires authentication)"
           },
           "response": []
+        },
+        {
+          "name": "Get System Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/prediction/system-info",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "prediction",
+                "system-info"
+              ]
+            },
+            "description": "Get information about the system, including GPU availability"
+          },
+          "response": []
+        },
+        {
+          "name": "Get AI Advice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"plant_type\": \"Tomato\",\n    \"condition\": \"Early blight\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/prediction/advice",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "prediction",
+                "advice"
+              ]
+            },
+            "description": "Get AI-powered advice for a specific plant disease"
+          },
+          "response": []
         }
       ],
       "description": "Disease prediction endpoints"

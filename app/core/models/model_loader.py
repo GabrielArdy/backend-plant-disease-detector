@@ -5,6 +5,7 @@ import json
 from app.utils.log import get_logger
 from app.core.resources import ResourceManager
 from app.core.models.inference import InferenceModel
+from app.utils.gpu_utils import get_device_info
 
 # Get logger for this module
 logger = get_logger(__name__)
@@ -13,6 +14,7 @@ class ModelLoader:
     def __init__(self):
         self.model = InferenceModel()
         self.class_names = []
+        self.device_info = None
         
     def load_model(self, model_path=None):
         """Load the saved ML model for inference"""
@@ -31,6 +33,10 @@ class ModelLoader:
             
             # Try to load class names
             self._load_class_names()
+            
+            # Get and store device information
+            self.device_info = get_device_info()
+            logger.info(f"Model using GPU: {self.device_info['using_gpu']}, Number of GPUs: {self.device_info['num_gpus']}")
             
             return True
         except Exception as e:
@@ -61,6 +67,12 @@ class ModelLoader:
         # If class names not loaded yet, try to load them
         self._load_class_names()
         return self.class_names
+        
+    def get_device_information(self):
+        """Return information about the devices being used for inference"""
+        if not self.device_info:
+            self.device_info = get_device_info()
+        return self.device_info
     
     def predict(self, preprocessed_image):
         """Make a prediction using the loaded model"""
@@ -68,7 +80,8 @@ class ModelLoader:
             raise ValueError("Model not loaded. Call load_model() first.")
         
         # Get raw predictions from the inference model
-        predictions = self.model.predict(preprocessed_image)
+        with tf.device('/GPU:0' if self.device_info and self.device_info['using_gpu'] else '/CPU:0'):
+            predictions = self.model.predict(preprocessed_image)
         
         # Process predictions
         predicted_class = np.argmax(predictions, axis=1)[0]

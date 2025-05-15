@@ -23,6 +23,12 @@ export MONGO_URI=mongodb://localhost:27017/plant_disease_dev
 export SECRET_KEY=development_secret_key
 export JWT_SECRET_KEY=jwt_secret_key_for_dev
 
+# Set Gemini API environment variables
+export GENAI_API_KEY=AIzaSyAl4gK3sb17rbTZL9FwF-59ZuOEFTqhKVM
+export GENAI_PROJECT_ID=167152973650
+export GENAI_LOCATION=global
+export GENAI_MODEL_NAME=gemini-2.0-flash
+
 # Activate virtual environment if it exists
 if [ -d "venv" ]; then
     echo "Activating virtual environment..."

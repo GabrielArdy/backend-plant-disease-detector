@@ -2,12 +2,14 @@ import tensorflow as tf
 import numpy as np
 import os
 from app.utils.log import get_logger
+from app.utils.gpu_utils import setup_gpu
 
 logger = get_logger(__name__)
 
 class InferenceModel:
     def __init__(self):
         self.model = None
+        self.using_gpu = False
         
     def load_model(self, model_path=None):
         """
@@ -30,6 +32,11 @@ class InferenceModel:
             if not os.path.exists(model_path):
                 logger.error(f"Model file not found at {model_path}")
                 return False
+            
+            # Check GPU availability and configure TensorFlow
+            self.using_gpu = setup_gpu()
+            device_type = "GPU" if self.using_gpu else "CPU"
+            logger.info(f"Using {device_type} for model inference")
             
             # Load the model
             self.model = tf.keras.models.load_model(model_path)

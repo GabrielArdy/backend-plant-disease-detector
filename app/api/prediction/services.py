@@ -90,19 +90,28 @@ class PredictionService:
     def _get_advice_for_disease(disease_name):
         """
         Return advice for the detected plant disease
-        This can be expanded with a database of treatments for different diseases
+        
+        Now using Gemini AI for enhanced advice generation through the advice_service
         """
-        # Simple example - in a real application, this would be more comprehensive
-        default_advice = "Please consult with a plant pathologist for accurate diagnosis and treatment."
-        
-        # Parse the disease name from format: "PlantType___Condition"
-        parts = disease_name.split("___")
-        plant_type = parts[0].lower()
-        condition = parts[1].lower() if len(parts) > 1 else ""
-        
-        # Check if this is a healthy plant
-        if "healthy" in condition:
-            return "Your plant appears healthy! Continue with regular care and monitoring."
+        try:
+            # First try to use Gemini AI-powered advice
+            from app.services.advice_service import get_gemini_advice_for_disease
+            
+            return get_gemini_advice_for_disease(disease_name)
+        except Exception as e:
+            logger.error(f"Error getting AI advice: {str(e)}. Falling back to basic advice.")
+            
+            # Fallback to basic advice if AI advice fails
+            default_advice = "Please consult with a plant pathologist for accurate diagnosis and treatment."
+            
+            # Parse the disease name from format: "PlantType___Condition"
+            parts = disease_name.split("___")
+            plant_type = parts[0].lower()
+            condition = parts[1].lower() if len(parts) > 1 else ""
+            
+            # Check if this is a healthy plant
+            if "healthy" in condition:
+                return "Your plant appears healthy! Continue with regular care and monitoring."
         
         # Very basic advice mapping - this should be expanded
         advice_map = {

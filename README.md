@@ -1,6 +1,6 @@
 # Plant Disease API Backend
 
-This is a Flask-based backend for the Plant Disease Detection application with MongoDB integration for user authentication and profile management.
+This is a Flask-based backend for the Plant Disease Detection application with MongoDB integration for user authentication, profile management, and GridFS-based image storage.
 
 ## Project Structure
 
@@ -46,6 +46,7 @@ backend/
 - Python 3.8+
 - MongoDB 4.4+
 - TensorFlow 2.x
+- (Optional) CUDA and cuDNN for GPU acceleration
 
 ## Setup Instructions
 
@@ -99,6 +100,15 @@ python run.py
 
 The API will be available at http://localhost:5000.
 
+## GPU Support
+
+The application automatically detects if a GPU is available and uses it to accelerate disease detection processing. For details on the GPU configuration, see [GPU Configuration Guide](docs/gpu_configuration.md).
+
+To check if your system is using GPU acceleration, visit the endpoint:
+```
+GET /api/prediction/system-info
+```
+
 ## Quick Start for Development
 
 We've provided a convenience script for local development:
@@ -113,7 +123,7 @@ chmod +x start_dev.sh
 
 This script:
 1. Checks if MongoDB is running and starts it if needed
-2. Sets the required environment variables
+2. Sets the required environment variables (including Gemini API key)
 3. Activates the virtual environment if present
 4. Starts the Flask application
 
@@ -209,6 +219,14 @@ This is particularly useful for:
   - Request body: Multipart form with:
     - `file`: Image file
     - `save_image`: Boolean to save image (optional, default: true)
+  - Response includes AI-generated advice about treatment, prevention, and additional information for the detected disease
+  
+- `POST /api/prediction/advice` - Get AI-powered advice for a specific plant disease (requires authentication)
+  - Headers: 
+    - `Authorization: Bearer {token}`
+    - `Content-Type: application/json`
+  - Request body: `{ "plant_type": "...", "condition": "..." }`
+  - Response includes structured advice with treatment, prevention, and additional information sections
   
 - `GET /api/prediction/classes` - Get all available disease classes
   
@@ -235,6 +253,36 @@ This is particularly useful for:
     - `plant_type`: Filter by plant type (optional)
     - `condition`: Filter by plant condition (optional)
 
+## AI-Powered Plant Disease Advice
+
+The system uses Google's Gemini AI to generate detailed advice for plant diseases. When a disease is detected, the API automatically provides structured advice with:
+
+- **Treatment recommendations**: Specific methods to treat the current infection
+- **Prevention strategies**: Ways to prevent future occurrences
+- **Additional information**: Background on the disease, causes, and impact
+
+See the [AI Advice Documentation](docs/ai_advice.md) for more details on this feature.
+
+## Image Storage with GridFS
+
+The system uses MongoDB's GridFS for storing plant disease images. This provides several benefits:
+
+- Images are stored directly in the MongoDB database for easier management
+- File metadata is stored alongside the images for better organization
+- No need to manage file system directories and permissions
+
+The system also maintains backward compatibility with the older file system-based storage. For more details, see the [GridFS Storage Documentation](docs/gridfs_storage.md).
+
+A migration script is included to help move existing images from the file system to GridFS:
+
+```bash
+# Check what would be migrated without making changes
+python scripts/migrate_to_gridfs.py --dry-run
+
+# Run the actual migration
+python scripts/migrate_to_gridfs.py
+```
+
 ## API Testing with Postman
 
 A Postman collection is included in the repository to help with testing the API:
@@ -248,6 +296,7 @@ The collection includes endpoints for:
 - Login
 - Profile management
 - Disease prediction
+- AI-powered plant disease advice
 
 ## Testing
 

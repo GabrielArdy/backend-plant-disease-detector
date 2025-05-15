@@ -103,19 +103,49 @@ def get_model_classes():
 def get_advice_for_disease(disease_name):
     """
     Return advice for the detected plant disease
-    This can be expanded with a database of treatments for different diseases
+    
+    Note: This function uses the legacy hard-coded advice.
+    For AI-powered advice, use the advice_service.py module.
     """
-    # Simple example - in a real application, this would be more comprehensive
-    default_advice = "Please consult with a plant pathologist for accurate diagnosis and treatment."
+    try:
+        from app.services.advice_service import get_plant_disease_advice
+        
+        # Parse the disease name from format: "PlantType___Condition"
+        parts = disease_name.split("___")
+        plant_type = parts[0].replace("_", " ")
+        condition = parts[1].replace("_", " ") if len(parts) > 1 else ""
+        
+        # Create disease info dictionary for AI advice
+        disease_info = {
+            'plant_type': plant_type,
+            'condition': condition,
+            'confidence': 0.9  # Default confidence when not available
+        }
+        
+        # Get AI-powered advice
+        advice_data = get_plant_disease_advice(disease_info)
+        
+        # Format the advice into a single string
+        advice = f"TREATMENT: {advice_data['treatment']}\n\n"
+        advice += f"PREVENTION: {advice_data['prevention']}\n\n"
+        advice += f"ADDITIONAL INFORMATION: {advice_data['additional_info']}"
+        
+        return advice
     
-    # Parse the disease name from format: "PlantType___Condition"
-    parts = disease_name.split("___")
-    plant_type = parts[0].lower()
-    condition = parts[1].lower() if len(parts) > 1 else ""
-    
-    # Check if this is a healthy plant
-    if "healthy" in condition:
-        return "Your plant appears healthy! Continue with regular care and monitoring."
+    except Exception as e:
+        logger.error(f"Error getting AI advice: {str(e)}. Falling back to static advice.")
+        
+        # Simple example - in a real application, this would be more comprehensive
+        default_advice = "Please consult with a plant pathologist for accurate diagnosis and treatment."
+        
+        # Parse the disease name from format: "PlantType___Condition"
+        parts = disease_name.split("___")
+        plant_type = parts[0].lower()
+        condition = parts[1].lower() if len(parts) > 1 else ""
+        
+        # Check if this is a healthy plant
+        if "healthy" in condition:
+            return "Your plant appears healthy! Continue with regular care and monitoring."
     
     # Very basic advice mapping - this should be expanded
     advice_map = {

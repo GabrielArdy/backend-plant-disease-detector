@@ -46,6 +46,13 @@ class PredictionHistory:
             # Add created_at timestamp
             prediction_data['created_at'] = datetime.utcnow()
             
+            # Check if image_path is a GridFS ID (not a file path)
+            if 'image_path' in prediction_data and prediction_data['image_path']:
+                if '/' not in prediction_data['image_path']:
+                    prediction_data['storage_type'] = 'gridfs'
+                else:
+                    prediction_data['storage_type'] = 'filesystem'
+                    
             # Insert into MongoDB
             mongo.db.prediction_history.insert_one(prediction_data)
             logger.info(f"Prediction saved with ID {prediction_data['prediction_id']}")

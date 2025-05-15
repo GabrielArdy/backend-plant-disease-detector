@@ -4,6 +4,7 @@ from app.api.prediction.services import PredictionService
 from app.utils.generators import generate_uuid, get_current_timestamp
 from app.utils.log import get_logger
 from app.utils.storage import ImageStorage
+from app.utils.gpu_utils import get_device_info
 from app.core.models.model_loader import ModelLoader
 from app.middleware.auth import token_required
 
@@ -198,4 +199,74 @@ def get_all_user_predictions():
         
     except Exception as e:
         logger.error(f"Error retrieving all user predictions: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+        
+@prediction_bp.route('/system-info', methods=['GET'])
+def get_system_info():
+    """
+    Get information about the system being used for inference, including GPU availability
+    """
+    try:
+        # Get model loader
+        model_loader = PredictionService._get_model_loader()
+        
+        # Get device information
+        device_info = model_loader.get_device_information()
+        
+        # Add TensorFlow version information
+        import tensorflow as tf
+        device_info['tensorflow_version'] = tf.__version__
+        
+        return jsonify({
+            'status': 'success',
+            'device_info': device_info
+        }), 200
+    except Exception as e:
+        logger.error(f"Error retrieving system information: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+        
+@prediction_bp.route('/advice', methods=['POST'])
+@token_required
+def get_ai_advice():
+    """
+    Get AI-powered advice for a specific plant condition
+    
+    Request body:
+    {
+        "plant_type": "Tomato",
+        "condition": "Early blight"
+    }
+    
+    Returns structured advice from Gemini AI
+    """
+    try:
+        # Get request data
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        # Validate required fields
+        required_fields = ['plant_type', 'condition']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Get advice from service
+        from app.services.advice_service import get_advice_for_condition
+        
+        plant_type = data['plant_type']
+        condition = data['condition']
+        
+        # Generate AI advice
+        advice_data = get_advice_for_condition(plant_type, condition)
+        
+        # Return structured advice
+        return jsonify({
+            'plant_type': plant_type,
+            'condition': condition,
+            'advice': advice_data
+        }), 200
+    except Exception as e:
+        logger.error(f"Error generating AI advice: {str(e)}")
         return jsonify({'error': str(e)}), 500
